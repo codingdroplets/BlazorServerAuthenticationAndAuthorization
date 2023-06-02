@@ -1,9 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\images\szechenyi-plusz-64px.png" />
+    <None Include="wwwroot\images\uj-logo-h121.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.5" />
+    <PackageReference Include="MySql.EntityFrameworkCore" Version="7.0.2" />
+    <PackageReference Include="Syncfusion.Blazor" Version="21.2.4" />
+  </ItemGroup>
 
 </Project>

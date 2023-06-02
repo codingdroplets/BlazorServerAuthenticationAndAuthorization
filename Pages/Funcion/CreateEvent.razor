@@ -1,0 +1,143 @@
+﻿@page "/create-event"
+@attribute [Authorize(Roles = "Admin,User")]
+@using BlazorAppProjekt.Models
+@using BlazorAppProjekt.Services
+@inject EventService EventService
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using Syncfusion.Blazor.SplitButtons
+@using Syncfusion.Blazor.Calendars
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 350px; /* Vagy bármely más érték, amit szeretnél */
+    }
+
+    .butt {
+        background-color: #1908B3;
+        color: white;
+        border-radius: 5px; /* Itt tudod megadni a gomb szövegének színét */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
+<h2 class="container">Esemény hozzáadsa</h2>
+
+<EditForm Model="@EventModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="container">
+        <label for="eventName">Esemény név:</label>
+		<div><InputText id="eventName" class="form-control" @bind-Value="EventModel.EventName" /></div>
+    </div>
+    <p></p>
+
+
+    <div class="container">
+        <label for="eventDescription">Esemény leírás:</label>
+		<div><InputTextArea id="eventDescription" class="form-control" @bind-Value="EventModel.EventDescription" /></div>
+    </div>
+    <p></p>
+
+
+    <div class="container">
+        <label for="eventDate">Esemény datum:</label>
+		<div><InputDate id="eventDate" class="form-control" @bind-Value="EventModel.EventDate" /></div>
+    </div>
+    <p></p>
+
+    <div class="container">
+        <label for="eventHour">Esemény kezdete(óra):</label>
+       <div> <select id="eventHour" class="form-control" @bind="selectedHour">
+            @foreach (var hour in Hours)
+            {
+                <option value="@hour" selected="@IsHourSelected(hour)">@hour</option>
+            }
+			</select>
+		</div>
+    </div>
+    <p></p>
+
+    <div class="container">
+        <label for="eventMinute">Esemény kezdete(perc):</label>
+        <div><select id="eventMinute" class="form-control" @bind="selectedMinute">
+            @foreach (var minute in Minutes)
+            {
+                <option value="@minute">@minute</option>
+            }
+			</select>
+		</div>
+    </div>
+    <p></p>
+
+    <button type="submit" class="container butt" disabled="@IsSubmitDisabled">Esemény létrehozas</button>
+	<p></p>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(EventCreatedMessage))
+{
+    <div class="alert alert-success mt-3">
+        Az új Event létrehozva
+    </div>
+}
+<select class="container" @onchange="HandleChange">
+	<option>Select a event</option>
+	@foreach (var Event in Events)
+	    {
+	<option value="	@Event.Id">@Event.EventName</option>
+		}
+</select>
+
+
+
+@code {
+    private Event EventModel { get; set; } = new Event { EventDate = DateTime.Today };
+    private List<int> Hours = Enumerable.Range(7, 13).ToList(); // órák 7-19-ig
+    private List<int> Minutes = new List<int> { 0, 15, 30, 45 }; // percek 0, 15, 30, 45
+
+    private int selectedHour = 7;
+    private int selectedMinute;
+    private bool IsSubmitDisabled => string.IsNullOrEmpty(EventModel.EventName) || string.IsNullOrEmpty(EventModel.EventDescription);
+
+    private string EventCreatedMessage { get; set; }
+
+    private string eventTimeString;
+
+    private List<Event> Events = new List<Event>();
+
+    private async Task HandleValidSubmit()
+    {
+        EventModel.EventDate = new DateTime(EventModel.EventDate.Year, EventModel.EventDate.Month, EventModel.EventDate.Day, selectedHour, selectedMinute, 0);
+
+        await EventService.AddEventAsync(EventModel);
+        EventCreatedMessage = $"Event created: {EventModel.EventName}, {EventModel.EventDescription} at {EventModel.EventDate}";
+    }
+
+    private bool IsHourSelected(int hour)
+    {
+        return hour == selectedHour;
+    }
+
+    private void HandleChange(ChangeEventArgs e)
+    {
+    var eventId = Convert.ToInt32(e.Value);
+    NavigationManager.NavigateTo($"/editevent/{eventId}");
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Events = await EventService.GetAllEventsAsync();
+    }
+
+
+}
+
+        

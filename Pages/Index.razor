@@ -1,31 +1,94 @@
 ﻿@page "/"
 @inject IJSRuntime js
-
+@inject NavigationManager NavigationManager
+@inject EventService EventService
+@using BlazorAppProjekt.Models
+@using BlazorAppProjekt.Services
 <PageTitle>Index</PageTitle>
+<!DOCTYPE html>
+<html>
+    ...
+    <style>         
+        body {
+            background-color: #FFFFFF;
+			
+            background-size: cover;
+            font-family: Serif, sans-serif;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
 
+	    }
+
+	   /* .button-container {
+		    background-color: #1908B3;
+		    color: white;
+		    border-radius: 5px; 
+		    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+	}*/
+
+        
+        h3 {
+            font-family: Serif, sans-serif;
+        }
+        h1{
+            lex-direction: column;
+        align-items: center;
+        justify-content: center;
+        }
+        h2{
+            lex-direction: column;
+        align-items: center;
+        justify-content: center;
+        }
+    .event-item {
+        background-color: white;
+        /* Hozzáadhatod a következő tulajdonságokat a középre igazításhoz */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 350px; /* Vagy bármely más érték, amit szeretnél */
+    }
+      </style>  
+<body>
 <AuthorizeView>
     <Authorized>
-        <h1>Hello, @context.User.Identity.Name!</h1>
+            <h1 class ="container">Űdvözöljük, @context.User.Identity.Name!</h1>
+            <h2 class ="container">Sikeres bejelentkezes</h2>
+        @foreach (var eventItem in events.OrderBy(e => e.EventDate))
+        {
+            <div class="event-item" @onclick="@(e => NavigateToEventDetails(e, eventItem.Id))">
+                <h3>@eventItem.EventDate: @eventItem.EventName</h3>
+                <p>@eventItem.EventDescription</p>
+            </div>
+        }
     </Authorized>
     <NotAuthorized>
-        <h1>Hello, Guest!</h1>
+        <h1>
+
+        </h1>
     </NotAuthorized>
 </AuthorizeView>
-
-Welcome to your new app.
-
-<SurveyPrompt Title="How is Blazor working for you?" />
-
-<AuthorizeView>
-    <Authorized>
-        <br /><br />
-        <button class="btn btn-outline-primary" @onclick="DisplayGreetingAlert">Display Greeting Alert</button>
-    </Authorized>
-</AuthorizeView>
-
-@code{
+</body>
+</html>
+@code {
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
+
+
+    private List<Event> events = new List<Event>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await EventService.GetEventsAsync() ?? new List<Event>();
+    }
 
     private async Task DisplayGreetingAlert()
     {
@@ -33,4 +96,30 @@ Welcome to your new app.
         var message = $"Hello {authState.User.Identity.Name}";
         await js.InvokeVoidAsync("alert", message);
     }
+
+    protected void NavigateToAddGuest(MouseEventArgs e)
+    {
+        NavigationManager.NavigateTo("/add-guest");
+    }
+
+    protected void NavigateToAddUser(MouseEventArgs e)
+    {
+        NavigationManager.NavigateTo("/adduser");
+    }
+
+    protected void NavigateToAddCreateEvent(MouseEventArgs e)
+    {
+        NavigationManager.NavigateTo("/create-event");
+    }
+
+    protected void NavigateToEventGuestList(MouseEventArgs e)
+    {
+        NavigationManager.NavigateTo("/eventguests");
+    }
+    protected void NavigateToEventDetails(MouseEventArgs e, int eventId)
+    {
+        NavigationManager.NavigateTo($"/event-details/{eventId}");
+    }
 }
+
+

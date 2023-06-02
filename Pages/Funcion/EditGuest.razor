@@ -1,0 +1,87 @@
+﻿@page "/editguest/{Id:int}"
+@using BlazorAppProjekt.Models
+@using BlazorAppProjekt.Services
+@inject GuestService guestService
+
+<style>
+    .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+
+        width: 350px; /* Vagy bármely más érték, amit szeretnél */
+	}
+    .butt {
+        background-color: #1908B3;
+        color: white;
+        border-radius: 5px; /* Itt tudod megadni a gomb szövegének színét */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+</style>
+
+<div class="container">
+<EditForm Model="guest" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="fixed-width">
+        <label for="name">Név:</label>
+        <div><InputText id="name" @bind-Value="guest.Name" /></div>
+    </div>
+    <p></p>
+
+    <div class="fixed-width">
+        <label for="title">Titulus:</label>
+        <div><InputText id="title" @bind-Value="guest.Title" /></div>
+    </div>
+    <p></p>
+
+    <div class="fixed-width">
+        <label for="date">Születési dátum:</label>
+        <div><InputDate id="date" @bind-Value="guest.Date" /></div>
+    </div>
+    <p></p>
+
+    <div class="fixed-width">
+        <label for="mobile">Telefonszám:</label>
+        <div><InputText id="mobile" @bind-Value="guest.Mobile" /></div>
+    </div>
+    <p></p>
+
+    <div class="fixed-width">
+        <label for="email">E-mail:</label>
+        <div><InputText id="email" @bind-Value="guest.Email" /></div>
+    </div>
+    <p></p>
+
+    <div class="fixed-width">
+        <label for="note">Jegyzet:</label>
+        <div><InputTextArea id="note" @bind-Value="guest.Note" /></div>
+    </div>
+    <p></p>
+
+    <div>
+        <button class="butt" type="submit">Mentés</button>
+    </div>
+</EditForm>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Guest guest;
+
+    protected override async Task OnInitializedAsync()
+    {
+        guest = await guestService.GetGuestByIdAsync(Id);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await guestService.UpdateGuestAsync(guest);
+    }
+}
+

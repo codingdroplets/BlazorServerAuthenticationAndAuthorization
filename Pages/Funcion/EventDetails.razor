@@ -1,0 +1,52 @@
+﻿@page "/event-details/{Id:int}"
+@using BlazorAppProjekt.Models
+@using BlazorAppProjekt.Services
+@inject EventService EventService
+@inject EventGuestService EventGuestService
+@inject GuestService GuestService
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 350px;
+    }
+
+    
+</style>
+
+@if (eventItem != null && eventGuests != null)
+{
+    <h2 class ="container">@eventItem.EventName - @eventItem.EventDate.ToShortDateString()</h2>
+    <p2 class="container">@eventItem.EventDescription</p2>
+    <h3 class="container">Meghívott </h3>
+    @foreach (var guest in eventGuests)
+    {
+        <p class="container">@guest.Guest.Name</p>
+        if (!string.IsNullOrEmpty(guest.Guest.Picture))
+        {
+            <img class="container" src="@($"/images/userimage/{guest.Guest.Picture}")" alt="Guest Picture">
+
+        }
+    }
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Event eventItem;
+    private List<EventGuest> eventGuests;
+
+    protected override async Task OnInitializedAsync()
+    {
+        eventItem = await EventService.GetEventByIdAsync(Id);
+        eventGuests = await EventGuestService.GetAllEventGuestsAsync();
+        eventGuests = eventGuests.Where(eg => eg.EventId == eventItem.Id).ToList();
+    }
+}

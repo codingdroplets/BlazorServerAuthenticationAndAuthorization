@@ -1,0 +1,151 @@
+﻿@attribute [Authorize(Roles = "Admin")]
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Authorization
+@page "/adduser"
+@using BlazorAppProjekt.Models
+@using BlazorAppProjekt.Services
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+<style>
+    .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+        width: 350px; /* Vagy bármely más érték, amit szeretnél */
+    }
+
+    .butt {
+        background-color: #1908B3;
+        color: white;
+        border-radius: 5px; /* Itt tudod megadni a gomb szövegének színét */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<h2 class ="container">Felhasználó hozzáasa</h2>
+
+<EditForm Model="@user" OnValidSubmit="@OnAddUser">
+    <DataAnnotationsValidator @ref="validator" />
+        <div class ="container">
+        <label for="UserName">Felhasználó Név:</label>
+		<div><InputText id="UserName" Value="@user.UserName" ValueChanged="@((string value) => user.UserName = value)" ValueExpression="@( () => user.UserName )" required /></div>
+    </div>
+    <p></p>
+
+    <div class="container">
+        <label for="UserPassword">Jelszó:</label>
+		<div><InputText id="UserPassword" type="password" Value="@user.Password" ValueChanged="@((string value) => user.Password = value)" ValueExpression="@( () => user.Password )" required /></div>
+    </div>
+    <p></p>
+
+    <div class="container">
+        <label for="RealName">Teljes Név:</label>
+		<div><InputText id="RealName" Value="@user.FullName" ValueChanged="@((string value) => user.FullName = value)" ValueExpression="@( () => user.FullName )" required /></div>
+    </div>
+    <p></p>
+
+    <div class="container">
+        <label for="UserLevel">Szerpkőr:</label>
+        <InputSelect id="UserLevel" Value="@user.userlevel" ValueChanged="@((string value) => user.userlevel = value)" ValueExpression="@( () => user.userlevel )" TValue="string" required>
+            <option value="User">User</option>
+            <option value="Admin">Admin</option>
+            <option value="Leader">Vezeto</option>
+        </InputSelect>
+    </div>
+    <p></p>
+
+    <div class="container">
+        <button class="butt" type="submit">Felhasználó hozzáasa</button>
+    </div>
+
+    @if (UserNameTaken)
+    {
+        <p>A felhasználónév már foglalt!</p>
+    }
+    @if (UserCreated)
+    {
+        <p>Felhasználó létrehozva!</p>
+    }
+</EditForm>
+<div class ="container">
+    <select @onchange="HandleChange">
+    <option>Select a user</option>
+    @foreach (var user in users)
+    {
+        <option value="@user.Id">@user.UserName</option>
+    }
+	</select>
+</div>
+
+
+@code {
+    //private User user = new User();
+    private User user = new User { userlevel = "User" };
+    private User selectedUser = new User();
+    private List<User> users = new List<User>();   
+    private DataAnnotationsValidator validator;   
+    private int selectedUserId;    
+    private bool UserCreated = false;
+    private bool UserNameTaken = false;
+    private bool UserUpdated = false;
+
+    private async Task OnAddUser()
+    {
+        if (await UserService.IsUserNameTaken(user.UserName))
+        {
+            UserNameTaken = true;
+            UserCreated = false;
+            user = new User { userlevel = "User" };
+        }
+        else
+        {
+            await UserService.AddUserAsync(user);
+            user = new User(); // Újratölti az üres felhasználót az űrlap törléséhez
+            UserCreated = true;
+            UserNameTaken = false;
+            user = new User { userlevel = "User" };
+        }
+        StateHasChanged();
+    }
+
+    private async void HandleValidSubmit()
+    {
+        await UserService.AddUserAsync(user);
+        user = new User { userlevel = "User" }; // Újratölti az üres felhasználót az űrlap törléséhez
+        
+    }
+
+    private async Task OnEditUser()
+    {
+        await UserService.UpdateUserAsync(selectedUser);
+        UserUpdated = true;
+    }
+
+    private async Task OnSelectedUserIdChanged(int userId)
+    {
+        selectedUserId = userId;
+        selectedUser = await UserService.GetUserByIdAsync(selectedUserId);
+    }
+
+    private void OnUserSelectionChanged(ChangeEventArgs e)
+    {
+        int userId = int.Parse(e.Value.ToString());
+        selectedUser = users.First(user => user.Id == userId);
+        UserUpdated = false;  // Reset the flag when a new user is selected
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await UserService.GetUsersAsync();
+        StateHasChanged();
+    }
+    private void HandleChange(ChangeEventArgs e)
+    {
+        var userId = e.Value.ToString();
+        NavigationManager.NavigateTo($"/edituser/{userId}");
+    }
+
+}
+
+

@@ -1,0 +1,99 @@
+﻿@page "/editevent/{Id:int}"
+@using BlazorAppProjekt.Models
+@using BlazorAppProjekt.Services
+@inject EventService EventService
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 350px; /* Vagy bármely más érték, amit szeretnél */
+    }
+
+    .butt {
+        background-color: #1908B3;
+        color: white;
+        border-radius: 5px; /* Itt tudod megadni a gomb szövegének színét */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+</style>
+@if (eventModel != null)
+{
+<EditForm Model="@eventModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="container">
+            <label for="eventName">Esemény név:</label>
+            <div>
+				<InputText id="eventName" @bind-Value="eventModel.EventName" />
+			</div>
+    </div>
+    <p></p>
+
+        <div class="container">
+        <label for="eventDescription">Esemény leírás:</label>
+        <div>
+			<InputTextArea id="eventDescription" @bind-Value="eventModel.EventDescription" />
+		</div>
+    </div>
+    <p></p>
+
+    <div class="container">
+    <InputDate id="eventDate" @bind-Value="eventModel.EventDate" />
+    </div>
+    <p></p>
+
+        <div class="form-group container">
+        <label for="eventHour">Event Hour:</label>
+        <select id="eventHour" @bind="selectedHour">
+            @foreach (var hour in Hours)
+            {
+                <option value="@hour">@hour</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group container">
+        <label for="eventMinute">Event Minute:</label>
+        <select id="eventMinute" @bind="selectedMinute">
+            @foreach (var minute in Minutes)
+            {
+                <option value="@minute">@minute</option>
+            }
+        </select>
+    </div>
+
+        <button class="container butt" type="submit">Mentés</button>
+</EditForm>
+}
+else
+{
+      <p>Loading...</p>
+}
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Event eventModel;
+    private List<int> Hours = Enumerable.Range(7, 13).ToList(); // órák 7-19-ig
+    private List<int> Minutes = new List<int> { 0, 15, 30, 45 }; // percek 0, 15, 30, 45
+    private int selectedHour;
+    private int selectedMinute;
+
+    protected override async Task OnInitializedAsync()
+    {
+        eventModel = await EventService.GetEventByIdAsync(Id);
+        selectedHour = eventModel.EventDate.Hour;
+        selectedMinute = eventModel.EventDate.Minute;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        eventModel.EventDate = new DateTime(eventModel.EventDate.Year, eventModel.EventDate.Month, eventModel.EventDate.Day, selectedHour, selectedMinute, 0);
+        await EventService.UpdateEventAsync(eventModel);
+    }
+}
