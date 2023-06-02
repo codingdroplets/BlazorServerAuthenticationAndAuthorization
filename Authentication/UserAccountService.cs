@@ -1,4 +1,5 @@
-﻿namespace BlazorServerAuthenticationAndAuthorization.Authentication
+﻿/*
+namespace BlazorServerAuthenticationAndAuthorization.Authentication
 {
     public class UserAccountService
     {
@@ -16,6 +17,34 @@
         public UserAccount? GetByUserName(string userName)
         {
             return _users.FirstOrDefault(x => x.UserName == userName);
+        }
+    }
+}
+*/
+using BlazorAppProjekt.Data;
+using BlazorAppProjekt.Models;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace BlazorServerAuthenticationAndAuthorization.Authentication
+{
+    public class UserAccountService
+    {
+        private readonly MyDbContext _dbContext;
+
+        public UserAccountService(MyDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        public UserAccount? GetByUserName(string userName)
+        {
+            var user = _dbContext.Users.FirstOrDefault(x => x.UserName == userName);
+            if (user == null)
+            {
+                return null;
+            }
+            return new UserAccount { UserName = user.UserName, Password = user.Password, Role = user.userlevel };
         }
     }
 }

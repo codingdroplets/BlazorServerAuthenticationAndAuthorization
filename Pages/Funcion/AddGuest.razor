@@ -1,0 +1,141 @@
+﻿@page "/add-guest"
+@attribute [Authorize(Roles = "Admin,User")]
+@using BlazorAppProjekt.Models
+@using BlazorAppProjekt.Services
+@inject GuestService GuestService
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Forms
+@inject IWebHostEnvironment Environment
+@inject IJSRuntime JSRuntime
+<style>
+    .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 350px; /* Vagy bármely más érték, amit szeretnél */
+    }
+
+    .butt {
+        background-color: #1908B3;
+        color: white;
+        border-radius: 5px; /* Itt tudod megadni a gomb szövegének színét */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+</style>
+<div class="container">
+<h2>Meghívott hozzáadása</h2>
+
+<EditForm Model="@guestModel" OnValidSubmit="@OnSubmit">
+    <DataAnnotationsValidator />
+        <div class="fixed-width">
+
+            <label for="name">Név:</label>
+			<div><InputText id="name" @bind-Value="@guestModel.Name" required /></div>
+
+		</div>
+        <p></p>
+
+        <div class="fixed-width">
+            <label for="title">Titulus:</label>
+            
+			<div>
+				<InputText id="title" @bind-Value="@guestModel.Title" required />
+			</div>
+		</div>
+        <p></p>
+
+        <div class="fixed-width">
+            <label for="date">Születési dátum:</label>
+
+			<div><InputDate id="date" TValue="DateTime" @bind-Value="@guestModel.Date" required /></div>
+		</div>
+        <p></p>
+
+        <div class="fixed-width">
+            <label for="mobile">Telefonszám:</label>
+
+			<div><InputText id="mobile" @bind-Value="@guestModel.Mobile" required /></div>
+		</div>
+        <p></p>
+
+        <div class="fixed-width">
+            <label for="email">E-mail:</label>
+
+			<div><InputText id="email" @bind-Value="@guestModel.Email" required /></div>
+		</div>  
+        <p></p>
+
+        <div class="fixed-width">
+            <label for="note">Jegyzet:</label>
+
+			<div><InputTextArea id="note" @bind-Value="@guestModel.Note" /></div>
+		</div>
+        <p></p>
+        <div>
+            <label>Kép kiválasztása</label>
+			<div><InputFile OnChange="UploadImage" /></div>
+		</div><p></p>
+    <div>
+            <button class="butt" type="submit">Meghívott hozzáadása</button>
+    </div>
+</EditForm>
+
+<h2>Meghívottak</h2>
+<select @onchange="HandleChange">
+        <option>Valasz Meghívottat</option>
+    @foreach (var guest in guests)
+    {
+        <option value="@guest.Id">@guest.Name</option>
+    }
+</select>
+</div>
+
+@code {
+    private Guest guestModel = new Guest();
+    private List<Guest> guests = new List<Guest>();
+    public string tmp="";
+    private async Task OnSubmit()
+    {
+        if (string.IsNullOrEmpty(guestModel.Picture))
+        {
+            guestModel.Picture = "default.jpg"; // Set picture to default value if no picture has been added
+        }
+        await GuestService.AddGuestAsync(guestModel);
+        await JSRuntime.InvokeVoidAsync("alert", "Meghívott létrehozva!");
+        guestModel = new Guest();
+        Console.WriteLine("Guest successfully added!");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        guests = await GuestService.GetGuestsAsync();
+    }
+
+    private void HandleChange(ChangeEventArgs e)
+    {
+        var guestId = int.Parse(e.Value.ToString());
+        NavigationManager.NavigateTo($"/editguest/{guestId}");
+    }
+
+    private async Task UploadImage(InputFileChangeEventArgs e)
+    {
+        var imageFile = e.File;
+        if (imageFile != null)
+        {
+            var fileName = Path.GetFileName(imageFile.Name);
+            var path = Path.Combine(Environment.WebRootPath, "images/userimage", fileName);
+            using var stream = new FileStream(path, FileMode.Create);
+            await imageFile.OpenReadStream().CopyToAsync(stream);
+            guestModel.Picture = fileName; // Assign the uploaded filename to the guest model
+        }
+    }
+
+}
+

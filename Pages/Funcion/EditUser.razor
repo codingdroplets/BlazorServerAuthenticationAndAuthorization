@@ -1,0 +1,72 @@
+﻿@page "/edituser/{Id:int}"
+@using BlazorAppProjekt.Models
+@using BlazorAppProjekt.Services
+@inject UserService userService
+
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    
+
+        width: 350px; /* Vagy bármely más érték, amit szeretnél */
+    }
+    
+</style>
+<div class="container">
+    <EditForm Model="user" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="fixed-width">
+            <label for="username">Felhasználónév:</label>
+            <div><InputText id="username" @bind-Value="user.UserName" /></div>
+        </div>
+        <p></p>
+
+        <div class="fixed-width">
+            <label for="password">Jelszó:</label>
+            <div><InputText id="password" @bind-Value="user.Password" /></div>
+        </div>
+        <p></p>
+
+        <div class="fixed-width">
+            <label for="fullname">Teljes név:</label>
+            <div><InputText id="fullname" @bind-Value="user.FullName" /></div>
+        </div>
+        <p></p>
+
+        <div class="container">
+            <label for="UserLevel">Szerpkőr:</label>
+            <InputSelect id="UserLevel" Value="@user.userlevel" ValueChanged="@((string value) => user.userlevel = value)" ValueExpression="@( () => user.userlevel )" TValue="string" required>
+                <option value="User">User</option>
+                <option value="Admin">Admin</option>
+                <option value="Leader">Vezeto</option>
+            </InputSelect>
+        </div>
+        <p></p>
+        <p></p>
+
+        <div>
+            <button class="butt" type="submit">Mentés</button>
+        </div>
+    </EditForm>
+</div>
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private User user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await userService.GetUserByIdAsync(Id);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await userService.UpdateUserAsync(user);
+    }
+}

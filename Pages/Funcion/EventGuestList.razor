@@ -1,0 +1,178 @@
+﻿@page "/eventguests"
+@attribute [Authorize(Roles = "Admin,User")]
+@using BlazorAppProjekt.Models
+@using BlazorAppProjekt.Services
+@inject GuestService GuestService
+@inject EventService EventService
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Web
+@inject EventGuestService EventGuestService
+
+<style>
+    .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width:350px;
+
+    
+    }
+
+    .butt {
+        background-color: #1908B3;
+        color: white;
+        border-radius: 5px; /* Itt tudod megadni a gomb szövegének színét */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    }
+</style>
+<h3 class="container">Meghívott eseményhez adása</h3>
+
+<div>@if (events == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <select class="container" @onchange="EventChanged">
+        <option value="">-- esemény --</option>
+        @foreach (var eventItem in events)
+        {
+            <option value="@eventItem.Id">@eventItem.EventName</option>
+        }
+    </select>
+}
+</div>
+<h3 class="container">meghívott kiválasztása</h3>
+
+@if (guests == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <select class="container" @bind="selectedGuestId">
+        <option value="">-- meghívott --</option>
+        @foreach (var guestItem in guests)
+        {
+            <option value="@guestItem.Id">@guestItem.Name</option>
+        }
+    </select>
+}
+<p></p>
+<button class="container butt" @onclick="AddEventGuest">Add Guest to Event</button>
+
+@if (selectedEventId.HasValue)
+{
+    <h3>Guests attending the event</h3>
+    if (guestsAttendingEvent == null || !guestsAttendingEvent.Any())
+    {
+        <p>No guests are attending the selected event.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var guest in guestsAttendingEvent)
+                {
+                    <tr @onclick="(() => SelectGuest(guest))">
+                        <td>@guest.Name</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@if (SelectedGuest != null)
+{
+    <h3 class="container">Felhasználói adatok Details</h3>
+    <p class="container">Név: @SelectedGuest.Name</p>
+    <p class="container">E-mail: @SelectedGuest.Email</p>
+    <p class="container">Telefonszám: @SelectedGuest.Mobile</p>
+    <p class="container">Jegyzet: @SelectedGuest.Note</p>
+    <button class="container" @onclick="DeleteEventGuest">Remove Guest from Event</button>
+}
+
+@code {
+    private List<EventGuest> eventGuests;
+    private List<Event> events;
+    private List<Guest> guests;
+
+    private int? selectedEventId;
+    private int? selectedGuestId;
+    private List<Guest> guestsAttendingEvent;
+
+    private Guest SelectedGuest { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        eventGuests = await EventGuestService.GetAllEventGuestsAsync();
+        events = await EventService.GetEventsAsync();
+        guests = await GuestService.GetGuestsAsync();
+    }
+
+    private async Task EventChanged(ChangeEventArgs e)
+    {
+        selectedEventId = int.Parse(e.Value.ToString());
+        guestsAttendingEvent = await GetGuestsAttendingEvent(selectedEventId.Value);
+    }
+
+    private async Task<List<Guest>> GetGuestsAttendingEvent(int eventId)
+    {
+        var eventGuestsForEvent = eventGuests.Where(eg => eg.EventId == eventId).ToList();
+        var guestsForEvent = new List<Guest>();
+
+        foreach (var eventGuest in eventGuestsForEvent)
+        {
+            var guest = guests.FirstOrDefault(g => g.Id == eventGuest.GuestId);
+            if (guest != null)
+            {
+                guestsForEvent.Add(guest);
+            }
+        }
+        return guestsForEvent;
+    }
+
+    private async Task AddEventGuest()
+    {
+        if (selectedEventId.HasValue && selectedGuestId.HasValue)
+        {
+            EventGuest newEventGuest = new EventGuest
+                {
+                    EventId = selectedEventId.Value,
+                    GuestId = selectedGuestId.Value
+                };
+
+            bool exists = eventGuests.Exists(eg => eg.EventId == newEventGuest.EventId && eg.GuestId == newEventGuest.GuestId);
+
+            if (!exists)
+            {
+                await EventGuestService.AddEventGuestAsync(newEventGuest);
+                eventGuests = await EventGuestService.GetAllEventGuestsAsync();
+                guestsAttendingEvent = await GetGuestsAttendingEvent(selectedEventId.Value);
+            }
+        }
+    }
+
+    private void SelectGuest(Guest guest)
+    {
+        SelectedGuest = guest;
+    }
+    private async Task DeleteEventGuest()
+    {
+        if (selectedEventId.HasValue && SelectedGuest != null)
+        {
+            await EventGuestService.DeleteEventGuestAsync(selectedEventId.Value, SelectedGuest.Id);
+            eventGuests = await EventGuestService.GetAllEventGuestsAsync();
+            guestsAttendingEvent = await GetGuestsAttendingEvent(selectedEventId.Value);
+            SelectedGuest = null; // deselect the guest
+        }
+    }
+}

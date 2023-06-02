@@ -2,6 +2,9 @@
 @inherits LayoutComponentBase
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
+@inject NavigationManager NavigationManager
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.SplitButtons
 
 <PageTitle>BlazorServerAuthenticationAndAuthorization</PageTitle>
 
@@ -12,13 +15,25 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <button class="button" aria-hidden="true">Home</button> 
+            </NavLink>
             <AuthorizeView>
                 <Authorized>
-                    <a @onclick="Logout" href="javascript:void(0)">Logout</a>
+                    <div class="dropdown">
+                        <button class="dropbtn">Menu</button>
+                        <div class="dropdown-content">
+                            <button class="button" @onclick="@(e => NavigateToAddGuest(e))">Meghívott hozzáadása</button>
+                            <button class="button" @onclick="@(e => NavigateToAddUser(e))">Felhasználó hozzáasa</button>
+                            <button class="button" @onclick="@(e => NavigateToAddCreateEvent(e))">Esemény hozzáadsa</button>
+                            <button class="button" @onclick="@(e => NavigateToEventGuestList(e))">Ember hozzáadása a rendezvényhez</button>
+                        </div>
+                    </div>
+
+                    <a class ="button" @onclick="Logout" href="javascript:void(0)">Logout</a>
                 </Authorized>
                 <NotAuthorized>
-                    <a href="/login">Login</a>
+                    <a class="button" href="/login">Login</a>
                 </NotAuthorized>
             </AuthorizeView>
         </div>
@@ -35,5 +50,28 @@
         var customAuthStateProvider = (CustomAuthenticationStateProvider)authStateProvider;
         await customAuthStateProvider.UpdateAuthenticationState(null);
         navManager.NavigateTo("/", true);
+    }
+    protected void NavigateToAddGuest(MouseEventArgs e)
+    {
+        NavigationManager.NavigateTo("/add-guest");
+    }
+
+    protected void NavigateToAddUser(MouseEventArgs e)
+    {
+        NavigationManager.NavigateTo("/adduser");
+    }
+
+    protected void NavigateToAddCreateEvent(MouseEventArgs e)
+    {
+        NavigationManager.NavigateTo("/create-event");
+    }
+
+    protected void NavigateToEventGuestList(MouseEventArgs e)
+    {
+        NavigationManager.NavigateTo("/eventguests");
+    }
+    protected void NavigateToEventDetails(MouseEventArgs e, int eventId)
+    {
+        NavigationManager.NavigateTo($"/event-details/{eventId}");
     }
 }

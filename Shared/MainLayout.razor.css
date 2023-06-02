@@ -8,9 +8,9 @@ main {
     flex: 1;
 }
 
-.sidebar {
+/*.sidebar {
     background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
-}
+}*/
 
 .top-row {
     background-color: #f7f7f7;
@@ -31,7 +31,7 @@ main {
         text-overflow: ellipsis;
     }
 
-@media (max-width: 640.98px) {
+@media (max-width: 240.98px) {
     .top-row:not(.auth) {
         display: none;
     }
@@ -45,22 +45,29 @@ main {
     }
 }
 
-@media (min-width: 641px) {
+@media (min-width: 200px) {
     .page {
         flex-direction: row;
     }
 
     .sidebar {
-        width: 250px;
-        height: 100vh;
+        /*width: 250px;*/
+        height: 200px;
         position: sticky;
         top: 0;
+        
+        
     }
 
     .top-row {
+        background-image: url('/images/uj-logo-h121.png');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-size: 150px auto;
         position: sticky;
         top: 0;
         z-index: 1;
+        border-radius: 5px;
     }
 
     .top-row, article {
@@ -68,3 +75,95 @@ main {
         padding-right: 1.5rem !important;
     }
 }
+body {
+    background-color: #1B06DA !important;
+}
+.button {
+    border-radius: 5px;
+    background-color: white;
+    color: black;
+    border: 2px solid #e7e7e7;
+}
+    .button:hover {
+        background-color: #e7e7e7;
+        
+    }
+@media only screen and (min-width: 600px) {
+    /* For tablets: */
+    .col-s-1 {
+        width: 8.33%;
+    }
+
+    .col-s-2 {
+        width: 16.66%;
+    }
+
+    .col-s-3 {
+        width: 25%;
+    }
+
+    .col-s-4 {
+        width: 33.33%;
+    }
+
+    .col-s-5 {
+        width: 41.66%;
+    }
+
+    .col-s-6 {
+        width: 50%;
+    }
+
+    .col-s-7 {
+        width: 58.33%;
+    }
+
+    .col-s-8 {
+        width: 66.66%;
+    }
+
+    .col-s-9 {
+        width: 75%;
+    }
+
+    .col-s-10 {
+        width: 83.33%;
+    }
+
+    .col-s-11 {
+        width: 91.66%;
+    }
+
+    .col-s-12 {
+        width: 100%;
+    }
+
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+.dropdown-content button {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+    .dropdown-content button:hover {
+        background-color: #ddd;
+    }

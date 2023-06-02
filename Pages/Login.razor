@@ -5,25 +5,67 @@
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
 
-<div class="row">
-    <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
-        <div class="mb-3 text-center">
-            <h3>LOGIN</h3>
-        </div>
-        <div class="mb-3">
-            <label>User Name</label>
-            <input @bind="model.UserName" class="form-control" placeholder="User Name" />
-        </div>
-        <div class="mb-3">
-            <label>Password</label>
-            <input @bind="model.Password" type="password" class="form-control" placeholder="Password" />
-        </div>
-        <div class="mb-3 d-grid gap-2">
-            <button @onclick="Authenticate" class="btn btn-primary">Login</button>
+<!DOCTYPE html>
+<html>
+<head>
+    ...
+    <style>
+        body {
+            background-color: #FFFFFF;
+			font-family: Serif, sans-serif;
+            //background-image: url('/images/20230510_MM_0181.jpg');
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+            
+        }
+
+        .login-box {
+            background-color: #FFFFFF;
+
+            font-family: Serif, sans-serif;
+            border-radius: 10px;
+            padding: 20px;
+            
+        }
+        .btn-primary {
+        background-color: #1908B3;
+        color: white;
+        border-radius: 5px; /* Itt tudod megadni a gomb szövegének színét */
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h3 {
+            font-family: Serif, sans-serif;
+        }
+
+        .row {
+            max-width: 800px;
+            margin: auto; /* Ezzel középre igazíthatod a tartalmat */
+        }
+    </style>
+</head>
+<body>
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border login-box">
+            <div class="mb-3 text-center">
+                <h3>LOGIN</h3>
+            </div>
+            <div class="mb-3">
+                <label>User Name</label>
+                <input @bind="model.UserName" class="form-control" placeholder="User Name" />
+            </div>
+            <div class="mb-3">
+                <label>Password</label>
+                <input @bind="model.Password" type="password" class="form-control" placeholder="Password" />
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <button @onclick="Authenticate" class="btn btn-primary">Login</button>
+            </div>
         </div>
     </div>
-</div>
-
+</body>
+</html>
 @code {
     private class Model
     {
